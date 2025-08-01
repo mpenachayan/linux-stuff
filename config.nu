@@ -1,4 +1,5 @@
 source ~/.zoxide.nu
+source ~/.cache/carapace/init.nu
 
 # Aliases
 alias ll = ls -lt
@@ -17,6 +18,7 @@ alias grs = git reset --soft HEAD~1
 alias grh = git reset --hard HEAD 
 alias gph = git push origin HEAD 
 alias gphf = git push origin HEAD --force 
+alias glog = git log --graph --pretty='%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%ah) %C(bold blue)<%an>%Creset' --all 
 
 mkdir ($nu.data-dir | path join "vendor/autoload")
 starship init nu | save -f ($nu.data-dir | path join "vendor/autoload/starship.nu")
@@ -28,8 +30,11 @@ def git-tag-with-datetime [] {
     echo $result
 }
 
-def gh-prerelease [] {
-    let tag = (git-tag-with-datetime)
+def gh-prerelease [tagName? :string] {
+    let tag = match $tagName {
+        null => (git-tag-with-datetime) 
+        _ => ($tagName)
+    } 
     let commit = (git rev-parse HEAD | str trim)
     gh release create $tag --target $commit --prerelease --notes $tag --latest=false
 }
